@@ -27,10 +27,20 @@ void init(void)//function that initializes the tab / our gameboard
     }
 }
 
+void empty_stdin (void) //empty the buffer
+{
+  int c = getchar();
+
+  while (c != '\n' && c != EOF)
+    {
+      c = getchar();
+    }
+}
+
 
 int verticalVerif(pToken)//function to verify if 4 tokens are vertically aligned
 {
-  for(int l = 0;l < 3; l++)
+  for(int l = 0;l < NBL-3; l++)
     {
       for(int c = 0;c < NBC; c++)
 	{
@@ -48,7 +58,7 @@ int horizontalVerif(pToken)//function to verify if 4 tokens are horizontally ali
 {
   for(int l = 0;l < NBL; l++)
     {
-      for(int c = 0;c < 4; c++)
+      for(int c = 0;c < NBC-3; c++)
 	{
 	  if (tab[l][c] == pToken && tab[l][c+1] == pToken && tab[l][c+2] == pToken && tab[l][c+3] == pToken)
 	    {
@@ -64,9 +74,9 @@ int diagVerif(pToken) //function to verify if 4 tokens are diagonally aligned
 {
 
   //verif diag top right
-  for(int l = 5;l > 2; l--)
+  for(int l = NBL - 1;l > NBL - 4; l--)
     {
-      for(int c = 0;c < 4; c++)
+      for(int c = 0;c < NBC - 3; c++)
 	{
 	  if (tab[l][c] == pToken && tab[l-1][c+1] == pToken && tab[l-2][c+2] == pToken && tab[l-3][c+3] == pToken)
 	    {
@@ -76,9 +86,9 @@ int diagVerif(pToken) //function to verify if 4 tokens are diagonally aligned
 	}
     }
   //verif diagonal top left
-  for(int l = 5;l > 2; l--) //going from bottom to the top, it'll stop at line 5-3 because past there, there                              will never be 4 tokens aligned
+  for(int l = NBL - 1;l > NBL - 4; l--) //going from bottom to the top, it'll stop at line 5-3 because past there, there                              will never be 4 tokens aligned
     {
-      for(int c = 7;c > 3; c--) // same here, past column 4, no tokens will be aligned from right to left
+      for(int c = 0;c < NBC - 3; c++) // same here, past column 4, no tokens will be aligned from right to left
 	{
 	  if (tab[l][c] == pToken && tab[l-1][c-1] == pToken && tab[l-2][c-2] == pToken && tab[l-3][c-3] == pToken)
 	    {
@@ -90,6 +100,36 @@ int diagVerif(pToken) //function to verify if 4 tokens are diagonally aligned
   return 0;
 }
 
+int verification(int returnValue, int value)
+{
+  for (;;)
+    {
+      if (returnValue == EOF)
+	{   //user generates manual EOF
+	  printf("-> EOF Error");
+	  return 0;
+	}
+      else if (returnValue == 0)
+	{    // if no Int in input
+	  printf("-> Il s'agirait de mettre un int enfait\n");
+	  empty_stdin();
+	  return 0;
+	}
+      else if (value < 1 || 7 < value)
+	{  // not in the range
+	  printf("-> Choose a valid column please [1-7]\n");
+	  empty_stdin();
+	  return 0;
+	}
+      else
+	{  //good input
+	  empty_stdin();
+	  break;
+	}
+    }
+
+  return 1;
+}
 
 int main(void){
 
@@ -98,20 +138,28 @@ int main(void){
   int column = 200;  //200 is to allow the program to enter the while loop (could have used a do/while)
   int columnFilled[7] = {0,0,0,0,0,0,0}; //determine if a column is filled or not
   int over = 1; //bool that determines if there's a game over or if someone won
+  int verif = 0;
+  int returnValue;
   init();
-  while (end < 42) //end will increase by 1 whenever a token is placed so when
+  while (end < 42) //end will increase by 1 whenever a token is placed
 
     {
       display();
 
-      while ((column < 1 || column > 7 ) || column == 200 || columnFilled[column-1]== 1)
+      while ((column < 1 ||column > 7) || column == 200 || columnFilled[column-1]== 1 || verif == 0)
 	{
-	  if(columnFilled[column-1] == 1)
+	  if(column < 7 && column > 1) //to avoid accessing a unavailable spot in my columnTab list
 	    {
-	      printf("This column is full, try another one !\n");
+	      if(columnFilled[column-1] == 1)
+		{
+		  printf("This column is full, try another one !\n");
+		  column = 200;
+		}
 	    }
+
 	  printf("[Player %d] Choose a column : ",player+1);
-	  scanf("%d",&column);
+	  returnValue = scanf("%d",&column);
+	  verif = verification(returnValue,column);
 	}
 
       if (tab[0][column-1] == '.')
@@ -148,16 +196,13 @@ int main(void){
 	  player--; // go back to player 1
 	}
       column = 200; //so we'll reenter the while loop // only doable since column will never reach 200 with the user's inputs
-
-
-
     }
   display();//displays the board
   if(over == 1)
     {
       printf("Game Over");
     }
-  printf("\nThanks For playing to Connect 4");
+  printf("\nThanks for playing to Connect 4");
 }
 
 
